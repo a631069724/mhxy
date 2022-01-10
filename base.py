@@ -2,6 +2,7 @@
 import uiautomator2 as u2
 import cv2
 import numpy as np
+import random
 
 d=u2.connect('127.0.0.1:7555')
 
@@ -54,12 +55,19 @@ class Device():
     _h,_w=d.window_size()
     _widthScale=1280/_w
     _heightScale=720/_h
+    _wScale=_w/1280
+    _hScale=_h/720
 
     def screenShot(self):
         img=d.screenshot()
         screen=cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
         size=screen.shape
         return cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
+
+    def click(self,x,y):
+        rx = (int(x) + random.randint(0, 10))*self._wScale
+        ry = (int(y) + random.randint(0, 10))*self._hScale
+        self.d.click(rx,ry)
 
 class Event():
     def __init__(self,file,RECT,click) -> None:

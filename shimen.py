@@ -5,4 +5,4 @@ from base import *
 
 
 class Shimen(Base):
-    EventShimenRenwu=Event('../pic/shimen/shimen_renwu.png',Task,)
+    EventShimenRenwu=Event('../pic/shimen/shimen_renwu.png',Task,(1140,224))
