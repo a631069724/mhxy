@@ -7,6 +7,9 @@ import time
 from enum import Enum
 
 XUAN_ZE_DO = 1
+ZHAN_DOU=2
+SHI_YONG=3
+GOU_MAI=4
         
 
 class RECTS(object):
@@ -64,14 +67,19 @@ class Device():
     _wScale=_w/1280
     _hScale=_h/720
     img=None
+
     def __init__(self) -> None:
         self.img=self.screenShot()
+        
 
     def screenShot(self):
         self.img=self.d.screenshot()
         screen=cv2.cvtColor(np.array(self.img), cv2.COLOR_BGR2GRAY)
         size=screen.shape
-        return cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
+        self.img = cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
+        # cv2.imshow('screen.png',self.img)
+        # cv2.waitKey(0)
+        return self.img
 
     def click(self,x,y):
         rx = (int(x) + random.randint(0, 10))*self._wScale
@@ -81,11 +89,16 @@ class Device():
     def image(self):
         return self.img
     
-    def find(self,event):
+
+    def find(self,event, threshold = 0.8):
         event.Pos = match_sub_image_in_rect(self.image(),
             event.Img,
-            event.Rect)
+            event.Rect,
+            threshold=threshold)
         return event.Pos
+
+    def flush(self):
+        self.screenShot()
 
     def isCmpare(self,img1,img2):
         res = cv2.matchTemplate(img1, img2, cv2.TM_CCOEFF_NORMED)
@@ -97,6 +110,7 @@ class Device():
         return False
 
     def findFromNow(self,event):
+        #耗时尽量少用
         event.Pos = match_sub_image_in_rect(self.screenShot(),
             event.Img,
             event.Rect)
@@ -106,11 +120,16 @@ class Device():
 
 class Event():
     def __init__(self,file,RECT) -> None:
+        if file=='':
+            self.EvnType=None
+            return
         self.file=file
         self.Img=imgRead(file)
+        if self.Img is None:
+            print('图片:',self.file,'未找到')
         self.Rect=RECT
-        self.Pos=None
-        self.EvenType=None
+        self.Pos=tuple
+        self.EvnType=None
 
     def Position(self):
         return self.Pos
@@ -118,16 +137,32 @@ class Event():
 
 class Base(Device):
     EventHuodong=Event('./pic/base/huodong.png',RECTS.TopHalf)
+    EventShiyong=Event('./pic/base/shiyong.png',RECTS.RightHalf)
+    EventGuajiQuxiao=Event('./pic/base/guaji_quxiao.png',RECTS.BottomHalf)
     EventXuanzeyaozuodeshi=Event('./pic/base/xuanzeyaozuodeshi.png',RECTS.RightHalf)
+    EventBaitan=Event('./pic/base/baitan.png',RECTS.TopHalf)
+    EventZidong=Event('./pic/base/zidong.png',RECTS.BottomHalf)
 
     def waitRun(self):
-        while True():
+        while True:
             if self.isHomePage():
                 img1=self.screenShot()[60:80,149:202]
-                time.sleep(1)
+                time.sleep(0.5)
                 img2=self.screenShot()[60:80,149:202]
                 if self.isCmpare(img1,img2):
                     break
+                else:
+                    print('跑图中...')
+            else:
+                break
+
+    def waitFight(self):
+        if self.find(self.EventZidong):
+            self.click(*self.EventZidong.Position())
+            time.sleep(0.2)
+        while self.findFromNow(self.EventGuajiQuxiao):
+            time.sleep(2)
+            print('战斗中...')
 
     def isHomePage(self): 
         if self.find(self.EventHuodong):
@@ -135,6 +170,17 @@ class Base(Device):
         return False
     
     def TaskType(self):
+        self.flush
         if self.find(self.EventXuanzeyaozuodeshi):
-            self.EventXuanzeyaozuodeshi.EvenType=XUAN_ZE_DO
+            self.EventXuanzeyaozuodeshi.EvnType=XUAN_ZE_DO
             return self.EventXuanzeyaozuodeshi
+        elif self.find(self.EventGuajiQuxiao):
+            self.EventGuajiQuxiao.EvnType=ZHAN_DOU
+            return self.EventGuajiQuxiao
+        elif self.find(self.EventShiyong):
+            self.EventShiyong.EvnType=SHI_YONG
+            return self.EventShiyong
+        elif self.find(self.EventBaitan):
+            self.EventBaitan.EvnType=GOU_MAI
+            return self.EventBaitan
+        return Event('',())
