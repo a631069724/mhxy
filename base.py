@@ -9,6 +9,10 @@ class RECTS(object):
     Task=()
 
 
+def imgRead(file):
+    return cv2.imread(file,0)
+
+
 def match_sub_image_in_rect(img_gray, template, rect, threshold = 0.8):
     
         #template = cv2.imread(imgfile, 0)
@@ -51,16 +55,19 @@ class Device():
     _widthScale=1280/_w
     _heightScale=720/_h
 
-    def imgRead(self,file):
-        return cv2.imread(file,0)
-
     def screenShot(self):
         img=d.screenshot()
         screen=cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
         size=screen.shape
         return cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
 
+class Event():
+    def __init__(self,file,RECT,click) -> None:
+        self.file=file
+        self.Img=imgRead(file)
+        self.Rect=RECT
+        self.Click=click
 
 class Base(Device):
-    imgShimenRenwu=Device().imgRead('./pic/shimen/shimen_renwu.png')
+    imgShimenRenwu=imgRead('./pic/shimen/shimen_renwu.png')
 
