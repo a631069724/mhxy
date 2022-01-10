@@ -22,26 +22,12 @@ def imgRead(file):
     return cv2.imread(file,0)
 
 
-def match_sub_image_in_rect(img_gray, template, rect, threshold = 0.8):
-    
-        #template = cv2.imread(imgfile, 0)
-        ih,iw=img_gray.shape
-        # http://stackoverflow.com/questions/19098104/python-opencv2-cv2-wrapper-get-image-size
-        height, width = template.shape
-        # http://stackoverflow.com/questions/15589517/how-to-crop-an-image-in-opencv-using-python
+def matchRect(img, template, rect, threshold = 0.8):
         lx, ly, rx, ry = rect
-        cropped_img_gray = img_gray[ly: ry, lx: rx]
-        if ry-ly<height or rx-lx<width:
-            print('请重新截图')
-            return None
-        if ih<ry or iw<rx:
-            print('超过图片大小')
-            return None
-        res = cv2.matchTemplate(cropped_img_gray, template, cv2.TM_CCOEFF_NORMED)
+        rect_img = img[ly: ry, lx: rx]
+        res = cv2.matchTemplate(rect_img, template, cv2.TM_CCOEFF_NORMED)
         loc = np.where( res >= threshold)
-
         locs = zip(*loc[::-1])
-
         if locs:
             for pt in locs:
                 return pt[0]+lx,pt[1]+ly
@@ -94,7 +80,7 @@ class Device():
         cv2.waitKey(0)
 
     def find(self,event, threshold = 0.8):
-        event.Pos = match_sub_image_in_rect(self.image(),
+        event.Pos = matchRect(self.image(),
             event.Img,
             event.Rect,
             threshold=threshold)
@@ -114,7 +100,7 @@ class Device():
 
     def findFromNow(self,event):
         #耗时尽量少用
-        event.Pos = match_sub_image_in_rect(self.screenShot(),
+        event.Pos = matchRect(self.screenShot(),
             event.Img,
             event.Rect)
         return event.Pos
