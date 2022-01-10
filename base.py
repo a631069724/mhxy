@@ -4,10 +4,10 @@ import cv2
 import numpy as np
 import random
 
-d=u2.connect('127.0.0.1:7555')
+
 
 class RECTS(object):
-    Task=()
+    Task=(1028,108,1279,512)
 
 
 def imgRead(file):
@@ -52,6 +52,7 @@ def match(img1,img2):
 
 
 class Device():
+    d=u2.connect('127.0.0.1:7555')
     _h,_w=d.window_size()
     _widthScale=1280/_w
     _heightScale=720/_h
@@ -59,7 +60,7 @@ class Device():
     _hScale=_h/720
 
     def screenShot(self):
-        img=d.screenshot()
+        img=self.d.screenshot()
         screen=cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
         size=screen.shape
         return cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
