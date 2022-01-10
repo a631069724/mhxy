@@ -52,11 +52,18 @@ class Shimen(Base):
             self.click(*event.Position())
         if event.EvnType==GOU_MAI:
             self.goumaiTask()
+        else:
+            time.sleep(0.2)
+            #self.showImage(self.image())
+            self.showImage(self.EventGoumai.Img)
+            if self.find(self.EventGoumai):
+                self.click(*self.EventGoumai.Position())
+
         
         if self.find(self.EventShangjiao):
-             self.click(*self.EventShangjiao.Position())
+            self.click(*self.EventShangjiao.Position())
         self.waitFight()
-        
+
     def goumaiTask(self):
         if self.find(self.EventGoumaiXuqiu):
             self.click(*self.EventGoumaiXuqiu.Position())

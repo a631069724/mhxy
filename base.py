@@ -89,6 +89,9 @@ class Device():
     def image(self):
         return self.img
     
+    def showImage(self,img):
+        cv2.imshow('image',img)
+        cv2.waitKey(0)
 
     def find(self,event, threshold = 0.8):
         event.Pos = match_sub_image_in_rect(self.image(),
@@ -125,6 +128,9 @@ class Event():
             return
         self.file=file
         self.Img=imgRead(file)
+        if file=='./pic/shimen/goumai.png':
+            cv2.imshow('image.png',self.Img)
+            cv2.waitKey(0)
         if self.Img is None:
             print('图片:',self.file,'未找到')
         self.Rect=RECT
