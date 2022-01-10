@@ -7,8 +7,9 @@ import random
 
 
 class RECTS(object):
-    Task=(1028,108,1279,512)
-
+    Task=(1028,108,1280,512)
+    BottomHalf=(0,360,1280,720)
+    RightHalf=(640,0,1280,720)
 
 def imgRead(file):
     return cv2.imread(file,0)
@@ -58,10 +59,13 @@ class Device():
     _heightScale=720/_h
     _wScale=_w/1280
     _hScale=_h/720
-
+    img=None
+    def __init__(self) -> None:
+        self.img=self.screenShot()
+        
     def screenShot(self):
-        img=self.d.screenshot()
-        screen=cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
+        self.img=self.d.screenshot()
+        screen=cv2.cvtColor(np.array(self.img), cv2.COLOR_BGR2GRAY)
         size=screen.shape
         return cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
 
@@ -69,13 +73,26 @@ class Device():
         rx = (int(x) + random.randint(0, 10))*self._wScale
         ry = (int(y) + random.randint(0, 10))*self._hScale
         self.d.click(rx,ry)
+    
+    def image(self):
+        return self.img
 
 class Event():
-    def __init__(self,file,RECT,click) -> None:
+    def __init__(self,file,RECT) -> None:
         self.file=file
         self.Img=imgRead(file)
         self.Rect=RECT
-        self.Click=click
+        self.Pos=None
+    
+    def find(self,img):
+        self.Pos = match_sub_image_in_rect(img,
+            self.Img,
+            self.Rect)
+        return self.Pos
+
+    def click(self,device):
+        device.click(self.Pos[0],self.Pos[1])
+
 
 class Base(Device):
     imgShimenRenwu=imgRead('./pic/shimen/shimen_renwu.png')
