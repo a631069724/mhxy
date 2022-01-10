@@ -9,17 +9,15 @@ class Shimen(Base):
     EventLingqu=Event('./pic/shimen/lingqu.png',RECTS.Task)
     EventShimenRenwu=Event('./pic/shimen/shimen_renwu.png',RECTS.Task)
     EventQuwancheng=Event('./pic/shimen/quwancheng.png',RECTS.BottomHalf)
-    EventXuanzeyaozuodeshi=Event('./pic/shimen/xuanzeyaozuodeshi.png',RECTS.RightHalf)
     EventShicha=Event('./pic/shimen/shicha.png',RECTS.RightHalf)
 
     def run(self):
 
         #领取师门任务
-        pos = self.EventLingqu.find(self.image())
-        if pos:
-            self.Lingqu(pos)
-        elif self.EventShimenRenwu.find(self.image()):
-            self.EventShimenRenwu.click(self)
+        if self.find(self.EventLingqu):
+            self.Lingqu(self.EventLingqu.Position())
+        elif self.find(self.EventShimenRenwu):
+            self.click(self.EventShimenRenwu.Position())
 
         self.doing()
 
@@ -28,18 +26,22 @@ class Shimen(Base):
         self.click(pos[0],pos[1])
         time.sleep(0.5)
 
-        pos = self.EventQuwancheng.find(self.screenShot())
-        if pos:
-            self.click(pos[0],pos[1])
+        if self.findFromNow(self.EventQuwancheng):
+            self.click(self.EventQuwancheng.Position())
     
     def doing(self):
-        pos = self.EventXuanzeyaozuodeshi.find(self.screenShot())
-        if pos:
-            self.ShichaRenwu(pos)
+        self.waitRun()
+        event=self.TaskType()
+        if event.EvenType==XUAN_ZE_DO:
+            self.XuanZeTask(event.Position())
     
-    def ShichaRenwu(self,pos):
-        if self.EventShicha.find(self.image()):
-            self.click(self)
+    def XuanZeTask(self,pos):
+        if self.find(self.EventShicha):
+            #找到有关师门的按钮
+            self.click(self.EventShicha.Position())
+        else:
+            #未找到有关师门的按钮，选择第一个
+            self.click(pos[0]+154,pos[1]+92)
 
 
 
