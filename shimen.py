@@ -10,17 +10,15 @@ class Shimen(Base):
     EventShimenRenwu=Event('./pic/shimen/shimen_renwu.png',RECTS.Task)
     EventQuwancheng=Event('./pic/shimen/quwancheng.png',RECTS.BottomHalf)
     EventShicha=Event('./pic/shimen/shicha.png',RECTS.RightHalf)
-    EventXuanzeDaan=Event('./pic/shimen/xuanze_daan.png',RECTS.RightHalf)
-    EventGoumaiXuqiu=Event('./pic/shimen/goumai_xuqiu.png',RECTS.TopHalf)
-    EventGoumai=Event('./pic/shimen/goumai.png',RECTS.BottomHalf)
-    EventShangjiao=Event('./pic/shimen/shangjiao.png',RECTS.BottomHalf)
+    EventXuanzeDaan=Event('./pic/shimen/xuanze_daan.png',RECTS.RightHalf) 
     
     
     EventWenDa={
         Event('./pic/shimen/wenda_qs_dazao.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_dazao.png',RECTS.RightHalf),
         Event('./pic/shimen/wenda_qs_shimengeshu.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_shimen20.png',RECTS.RightHalf),
         Event('./pic/shimen/wenda_qs_chuandai.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_chuandai.png',RECTS.RightHalf),
-        Event('./pic/shimen/wenda_qs_sanjie.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_sanjie.png',RECTS.RightHalf)
+        Event('./pic/shimen/wenda_qs_sanjie.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_sanjie.png',RECTS.RightHalf),
+        Event('./pic/shimen/wenda_qs_huaguojineng.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_huaguojineng.png',RECTS.RightHalf)
         }
 
     def run(self):
@@ -29,9 +27,14 @@ class Shimen(Base):
         if self.find(self.EventLingqu):
             self.Lingqu(self.EventLingqu.Position())
         elif self.find(self.EventShimenRenwu):
+            x,y=self.EventShimenRenwu.Position()
+            self.ShiMenDetail=Event('',RECTS.RightHalf)
+            self.ShiMenDetail.Img=self.image()[y:y+80,x:x+230]
             self.click(*self.EventShimenRenwu.Position())
-        self.flush()
-        self.doing()
+        while True:
+            time.sleep(0.5)
+            self.flush()
+            self.doing()
 
     def Lingqu(self,pos):
         #点击任务栏师门任务
@@ -42,37 +45,21 @@ class Shimen(Base):
             self.click(*self.EventQuwancheng.Position())
     
     def doing(self):
-        self.waitRun() #耗时必须优化
         event=self.TaskType()
         if event.EvnType==XUAN_ZE_DO:
             self.XuanZeTask(event.Position())
-        if event.EvnType==ZHAN_DOU:
+        elif event.EvnType==ZHAN_DOU:
             self.waitFight()
-        if event.EvnType==SHI_YONG:
-            self.click(*event.Position())
-        if event.EvnType==GOU_MAI:
-            self.goumaiTask()
         else:
-            time.sleep(0.2)
-            #self.showImage(self.image())
-            self.showImage(self.EventGoumai.Img)
-            if self.find(self.EventGoumai):
-                self.click(*self.EventGoumai.Position())
+            self.BaseRun()
+            #同一任务 防止点击频繁被系统判断脚本
+            if  self.find(self.EventShimenRenwu):
+                if self.find(self.ShiMenDetail):
+                    return
+                x,y=self.EventShimenRenwu.Position()
+                self.ShiMenDetail.Img=self.image()[y:y+80,x:x+230]
+                self.click(*self.EventShimenRenwu.Position())
 
-        
-        if self.find(self.EventShangjiao):
-            self.click(*self.EventShangjiao.Position())
-        self.waitFight()
-
-    def goumaiTask(self):
-        if self.find(self.EventGoumaiXuqiu):
-            self.click(*self.EventGoumaiXuqiu.Position())
-            if self.find(self.EventGoumai):
-                self.click(*self.EventGoumai.Position())
-        self.flush()
-        self.waitRun()
-        if self.find(self.EventShangjiao):
-             self.click(*self.EventShangjiao.Position())
 
     def XuanZeTask(self,pos):
         if self.find(self.EventShicha):
@@ -82,7 +69,7 @@ class Shimen(Base):
             #未找到有关师门的按钮，选择第一个
             self.click(pos[0]+154,pos[1]+92)
         time.sleep(0.2)
-        if self.findFromNow(self.EventXuanzeDaan):
+        while self.findFromNow(self.EventXuanzeDaan):
             self.wenda()
 
     def wenda(self):

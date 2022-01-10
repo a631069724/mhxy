@@ -90,7 +90,7 @@ class Device():
         return self.img
     
     def showImage(self,img):
-        cv2.imshow('image',img)
+        cv2.imshow('image.png',img)
         cv2.waitKey(0)
 
     def find(self,event, threshold = 0.8):
@@ -125,12 +125,10 @@ class Event():
     def __init__(self,file,RECT) -> None:
         if file=='':
             self.EvnType=None
+            self.Rect=RECT
             return
         self.file=file
         self.Img=imgRead(file)
-        if file=='./pic/shimen/goumai.png':
-            cv2.imshow('image.png',self.Img)
-            cv2.waitKey(0)
         if self.Img is None:
             print('图片:',self.file,'未找到')
         self.Rect=RECT
@@ -148,6 +146,9 @@ class Base(Device):
     EventXuanzeyaozuodeshi=Event('./pic/base/xuanzeyaozuodeshi.png',RECTS.RightHalf)
     EventBaitan=Event('./pic/base/baitan.png',RECTS.TopHalf)
     EventZidong=Event('./pic/base/zidong.png',RECTS.BottomHalf)
+    EventGoumai=Event('./pic/base/goumai.png',RECTS.BottomHalf)
+    EventGoumaiXuqiu=Event('./pic/base/goumai_xuqiu.png',RECTS.TopHalf)
+    EventShangjiao=Event('./pic/base/shangjiao.png',RECTS.BottomHalf)
 
     def waitRun(self):
         while True:
@@ -168,7 +169,6 @@ class Base(Device):
             time.sleep(0.2)
         while self.findFromNow(self.EventGuajiQuxiao):
             time.sleep(2)
-            print('战斗中...')
 
     def isHomePage(self): 
         if self.find(self.EventHuodong):
@@ -176,17 +176,31 @@ class Base(Device):
         return False
     
     def TaskType(self):
-        self.flush
         if self.find(self.EventXuanzeyaozuodeshi):
             self.EventXuanzeyaozuodeshi.EvnType=XUAN_ZE_DO
             return self.EventXuanzeyaozuodeshi
         elif self.find(self.EventGuajiQuxiao):
             self.EventGuajiQuxiao.EvnType=ZHAN_DOU
             return self.EventGuajiQuxiao
-        elif self.find(self.EventShiyong):
-            self.EventShiyong.EvnType=SHI_YONG
-            return self.EventShiyong
-        elif self.find(self.EventBaitan):
-            self.EventBaitan.EvnType=GOU_MAI
-            return self.EventBaitan
+        # elif self.find(self.EventShiyong):
+        #     self.EventShiyong.EvnType=SHI_YONG
+        #     return self.EventShiyong
+        # elif self.find(self.EventBaitan):
+        #     self.EventBaitan.EvnType=GOU_MAI
+        #     return self.EventBaitan
         return Event('',())
+    
+    def BaseRun(self):
+        #使用
+        if self.find(self.EventShiyong):
+            self.click(*self.EventShiyong.Position())
+        elif self.find(self.EventGoumai):
+        #购买
+            if self.find(self.EventGoumaiXuqiu):
+                self.click(*self.EventGoumaiXuqiu.Position())
+            self.click(*self.EventBaitan.Position())
+        elif self.find(self.EventShangjiao):
+        #上交
+                self.click(*self.EventShangjiao.Position())
+        #TODO 跳过剧情
+        
