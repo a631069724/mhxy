@@ -1,159 +1,10 @@
-
-import uiautomator2 as u2
-import cv2
-import numpy as np
-import random
-import time
-from enum import Enum
+from utils import *
 
 XUAN_ZE_DO = 1
 ZHAN_DOU=2
 SHI_YONG=3
 GOU_MAI=4
         
-
-class RECTS(object):
-    Task=(1028,108,1280,512)
-    BottomHalf=(0,360,1280,720)
-    RightHalf=(640,0,1280,720)
-    TopHalf=(0,0,1280,360)
-
-def imgRead(file):
-    return cv2.imread(file,0)
-
-
-def matchRect(img, template, rect, threshold = 0.8):
-        lx, ly, rx, ry = rect
-        rect_img = img[ly: ry, lx: rx]
-        res = cv2.matchTemplate(rect_img, template, cv2.TM_CCOEFF_NORMED)
-        loc = np.where( res >= threshold)
-        locs = zip(*loc[::-1])
-        for pt in locs:
-            return pt[0]+lx,pt[1]+ly
-        return None
-    
-
-def match(img1,img2):
-    res = cv2.matchTemplate(img1, img2, cv2.TM_CCOEFF_NORMED)
-    loc = np.where( res >= 0.8)
-    locs = zip(*loc[::-1])
-    for pt in locs:
-        return pt
-    return None
-
-def Rotation(img,angle=90):
-
-    height, width = img.shape[:2]
-    
-    matRotate = cv2.getRotationMatrix2D((height * 0.5, width * 0.5), angle, 1)
-    dst = cv2.warpAffine(img, matRotate, (width, height*2))
-    rows, cols = dst.shape[:2]
-    
-    for col in range(0, cols):
-        if dst[:, col].any():
-            left = col
-            break
-    
-    for col in range(cols-1, 0, -1):
-        if dst[:, col].any():
-            right = col
-            break
-    
-    for row in range(0, rows):
-        if dst[row,:].any():
-            up = row
-            break
-    
-    for row in range(rows-1,0,-1):
-        if dst[row,:].any():
-            down = row
-            break
-    
-    res_widths = abs(right - left)
-    res_heights = abs(down - up)
-    res = np.zeros([res_heights ,res_widths, 3], np.uint8)
-    
-    for res_width in range(res_widths):
-        for res_height in range(res_heights):
-            res[res_height, res_width] = dst[up+res_height, left+res_width]
-    return res
-
-
-class Device():
-    d=u2.connect('127.0.0.1:7555')
-    _h,_w=d.window_size()
-    _widthScale=1280/_w
-    _heightScale=720/_h
-    _wScale=_w/1280
-    _hScale=_h/720
-    img=None
-
-    def __init__(self) -> None:
-        self.img=self.screenShot()
-        
-
-    def screenShot(self):
-        self.img=self.d.screenshot()
-        screen=cv2.cvtColor(np.array(self.img), cv2.COLOR_BGR2GRAY)
-        size=screen.shape
-        self.img = cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
-        # cv2.imshow('screen.png',self.img)
-        # cv2.waitKey(0)
-        return self.img
-
-    def click(self,x,y):
-        rx = (int(x) + random.randint(0, 10))*self._wScale
-        ry = (int(y) + random.randint(0, 10))*self._hScale
-        self.d.click(rx,ry)
-    
-    def image(self):
-        return self.img
-    
-    def showImage(self,img):
-        cv2.imshow('image.png',img)
-        cv2.waitKey(0)
-
-    def find(self,event, threshold = 0.8):
-        event.Pos = matchRect(self.image(),
-            event.Img,
-            event.Rect,
-            threshold=threshold)
-        return event.Pos
-
-    def flush(self):
-        self.screenShot()
-
-    def isCmpare(self,img1,img2):
-        return match(img1,img2)
-
-    def findFromNow(self,event):
-        #耗时尽量少用
-        event.Pos = matchRect(self.screenShot(),
-            event.Img,
-            event.Rect)
-        return event.Pos
-    
-    
-
-class Event():
-    def __init__(self,file,RECT) -> None:
-
-        self.file=file
-        self.Img=None
-        self.Pos=tuple
-        self.EvnType=None
-        self.Rect=RECT
-        if file is not '':
-            self.Img=imgRead(file)
-        else:
-            return
-        if self.Img is None:
-            print('图片:',self.file,'未找到')
-        
-
-    def Position(self):
-        return self.Pos
-
 
 class Base(Device):
     EventHuodong=Event('./pic/base/huodong.png',RECTS.TopHalf)
@@ -194,6 +45,16 @@ class Base(Device):
             time.sleep(2)
 
     def isHomePage(self): 
+        # print('查找',self.EventZhiyin.file)
+        # lx, ly, rx, ry=self.EventZhiyin.Rect
+        # cv2.imshow('image.png',self.image())
+
+        # cv2.imshow('rect.png',self.image()[ly: ry, lx: rx])
+        # cv2.imshow('zhiyin.png',self.EventZhiyin.Img)
+        # cv2.waitKey(0)
+        # if self.find(self.EventZhiyin,0.6):
+        #     print('找到',self.EventZhiyin.file)
+        #     print(self.EventZhiyin.Position())
         if self.find(self.EventHuodong) or self.find(self.EventZhiyin):
             return True
         return False
@@ -235,7 +96,7 @@ class Base(Device):
             print('上交物品')
             self.click(*self.EventShangjiao.Position())
         #TODO 跳过剧情
-        elif self.find(self.EventJixiBtn):
+        elif self.find(self.EventJixiBtn,0.9):
             print('跳过剧情')
             self.click(*self.EventJixiBtn.Position())
             
@@ -245,4 +106,5 @@ class Base(Device):
             for event in self.EventBeginCancel:
                 if self.find(event):
                     self.click(*event.Position)
+                    time.sleep(0.2)
                     self.flush()
