@@ -19,6 +19,8 @@
 图像识别采用FLANN单应性匹配，支持模拟器、手机，不受分辨率影响，缺点运行缓慢。
 如果只是用模拟器可以使用模板匹配，速度快。
 utils.py文件中
+
+
     def find(self,event, threshold = 0.7):
         ##模板匹配
         # event.Pos = matchRect(self.image(),
