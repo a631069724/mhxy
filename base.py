@@ -88,13 +88,7 @@ class Device():
         self.screenShot()
 
     def isCmpare(self,img1,img2):
-        res = cv2.matchTemplate(img1, img2, cv2.TM_CCOEFF_NORMED)
-        loc = np.where( res >= 0.8)
-        locs = zip(*loc[::-1])
-
-        for pt in locs:
-            return True
-        return False
+        return match(img1,img2)
 
     def findFromNow(self,event):
         #耗时尽量少用

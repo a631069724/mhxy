@@ -22,7 +22,7 @@ class Shimen(Base):
         Event('./pic/shimen/wenda_qs_huaguojineng.png',RECTS.BottomHalf):Event('./pic/shimen/wenda_ans_huaguojineng.png',RECTS.RightHalf)
         }
 
-    def run(self):
+    def Run(self):
         self.Begin()
         #领取师门任务
         if self.find(self.EventLingqu):
@@ -94,4 +94,4 @@ class Shimen(Base):
 
 
 task=Shimen()
-task.run()
+task.Run()
