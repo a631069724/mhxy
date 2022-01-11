@@ -121,6 +121,7 @@ class Event():
 
 class Base(Device):
     EventHuodong=Event('./pic/base/huodong.png',RECTS.TopHalf)
+    EventZhiyin=Event('./pic/base/zhiyin.png',RECTS.TopHalf)
     EventShiyong=Event('./pic/base/shiyong.png',RECTS.RightHalf)
     EventGuajiQuxiao=Event('./pic/base/guaji_quxiao.png',RECTS.BottomHalf)
     EventXuanzeyaozuodeshi=Event('./pic/base/xuanzeyaozuodeshi.png',RECTS.RightHalf)
@@ -157,7 +158,7 @@ class Base(Device):
             time.sleep(2)
 
     def isHomePage(self): 
-        if self.find(self.EventHuodong):
+        if self.find(self.EventHuodong) or self.find(self.EventZhiyin):
             return True
         return False
     
