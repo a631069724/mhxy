@@ -28,9 +28,8 @@ def matchRect(img, template, rect, threshold = 0.8):
         res = cv2.matchTemplate(rect_img, template, cv2.TM_CCOEFF_NORMED)
         loc = np.where( res >= threshold)
         locs = zip(*loc[::-1])
-        if locs:
-            for pt in locs:
-                return pt[0]+lx,pt[1]+ly
+        for pt in locs:
+            return pt[0]+lx,pt[1]+ly
         return None
     
 
@@ -38,9 +37,8 @@ def match(img1,img2):
     res = cv2.matchTemplate(img1, img2, cv2.TM_CCOEFF_NORMED)
     loc = np.where( res >= 0.8)
     locs = zip(*loc[::-1])
-    if locs:
-        for pt in locs:
-            return pt
+    for pt in locs:
+        return pt
     return None
 
 
@@ -93,9 +91,9 @@ class Device():
         res = cv2.matchTemplate(img1, img2, cv2.TM_CCOEFF_NORMED)
         loc = np.where( res >= 0.8)
         locs = zip(*loc[::-1])
-        if locs:
-            for pt in locs:
-                return True
+
+        for pt in locs:
+            return True
         return False
 
     def findFromNow(self,event):
@@ -109,17 +107,19 @@ class Device():
 
 class Event():
     def __init__(self,file,RECT) -> None:
-        if file=='':
-            self.EvnType=None
-            self.Rect=RECT
-            return
+
         self.file=file
-        self.Img=imgRead(file)
-        if self.Img is None:
-            print('图片:',self.file,'未找到')
-        self.Rect=RECT
+        self.Img=None
         self.Pos=tuple
         self.EvnType=None
+        self.Rect=RECT
+        if file is not '':
+            self.Img=imgRead(file)
+        else:
+            return
+        if self.Img is None:
+            print('图片:',self.file,'未找到')
+        
 
     def Position(self):
         return self.Pos
@@ -133,9 +133,14 @@ class Base(Device):
     EventBaitan=Event('./pic/base/baitan.png',RECTS.TopHalf)
     EventZidong=Event('./pic/base/zidong.png',RECTS.BottomHalf)
     EventGoumai=Event('./pic/base/goumai.png',RECTS.BottomHalf)
+    EventGoumai2=Event('./pic/base/goumai2.png',RECTS.BottomHalf)
     EventGoumaiXuqiu=Event('./pic/base/goumai_xuqiu.png',RECTS.TopHalf)
     EventShangjiao=Event('./pic/base/shangjiao.png',RECTS.BottomHalf)
-
+    EventJixiBtn=Event('./pic/base/jixu_btn.png',RECTS.TopHalf)
+    EventBeginCancel=[
+        Event('./pic/base/begin_guanbi1.png',RECTS.RightHalf),
+        Event('./pic/base/begin_guanbi2.png',RECTS.RightHalf),
+    ]
     def waitRun(self):
         while True:
             if self.isHomePage():
@@ -150,6 +155,7 @@ class Base(Device):
                 break
 
     def waitFight(self):
+        print('战斗中...')
         if self.find(self.EventZidong):
             self.click(*self.EventZidong.Position())
             time.sleep(0.2)
@@ -179,14 +185,33 @@ class Base(Device):
     def BaseRun(self):
         #使用
         if self.find(self.EventShiyong):
+            print('使用物品')
             self.click(*self.EventShiyong.Position())
         elif self.find(self.EventGoumai):
-        #购买
+        #购买1
+            print('购买物品')
             if self.find(self.EventGoumaiXuqiu):
                 self.click(*self.EventGoumaiXuqiu.Position())
-            self.click(*self.EventBaitan.Position())
+            self.click(*self.EventGoumai.Position())
+        elif  self.find(self.EventGoumai2):
+        #购买2
+            print('购买物品')
+            if self.find(self.EventGoumaiXuqiu):
+                    self.click(*self.EventGoumaiXuqiu.Position())
+            self.click(*self.EventGoumai2.Position())
         elif self.find(self.EventShangjiao):
         #上交
-                self.click(*self.EventShangjiao.Position())
+            print('上交物品')
+            self.click(*self.EventShangjiao.Position())
         #TODO 跳过剧情
+        elif self.find(self.EventJixiBtn):
+            print('跳过剧情')
+            self.click(*self.EventJixiBtn.Position())
+            
         
+    def Begin(self):
+        while not self.isHomePage():
+            for event in self.EventBeginCancel:
+                if self.find(event):
+                    self.click(*event.Position)
+                    self.flush()
