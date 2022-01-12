@@ -91,10 +91,9 @@ class Shimen(Base):
     def Lingqu(self,pos):
         #点击任务栏师门任务
         print('领取师门任务')
-        self.UseImg()
         self.click(pos[0],pos[1])
-        time.sleep(0.5)
-        self.flush()
+        time.sleep(1)
+        self.screenShot()
         if self.find(self.EventQuwancheng):
             self.click(*self.EventQuwancheng.Position())
         elif self.find(self.EventXuanze):
