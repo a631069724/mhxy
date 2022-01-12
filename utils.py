@@ -128,8 +128,8 @@ def flann_match(img,template,rect,threshold=0.7):
 
 
 class Device():
-    d=u2.connect('192.168.0.101:1989')
-    #d=u2.connect('127.0.0.1:7555')
+    #d=u2.connect('192.168.0.101:1989')
+    d=u2.connect('127.0.0.1:7555')
     #模拟器使用
     _h,_w=d.window_size()
     #手机使用
@@ -141,17 +141,21 @@ class Device():
     _hScale=_h/720
     img=None
 
+    isLatest=False
+
     def __init__(self) -> None:
         self.img=self.screenShot()
+        self.isLatest=True
         
 
     def screenShot(self):
-        self.img=self.d.screenshot()
-        screen=cv2.cvtColor(np.array(self.img), cv2.COLOR_BGR2GRAY)
+        tmpimg=self.d.screenshot()
+        screen=cv2.cvtColor(np.array(tmpimg), cv2.COLOR_BGR2GRAY)
         size=screen.shape
         self.img = cv2.resize(screen,(int(size[1]*self._widthScale),int(size[0]*self._heightScale)),interpolation= cv2.INTER_LINEAR)
         # cv2.imshow('screen.png',self.img)
         # cv2.waitKey(0)
+        self.isLatest=True
         return self.img
 
     def click(self,x,y):
@@ -173,36 +177,34 @@ class Device():
             threshold)
         return event.Pos
 
-    def find(self,event, threshold = 0.7):
+    def find(self,event, threshold = 0.8):
         ##模板匹配
-        # event.Pos = matchRect(self.image(),
-        #     event.Img,
-        #     event.Rect,
-        #     threshold=threshold)
-        #return event.Pos
-        
-        #FLANN单应性匹配
-        event.Pos= flann_match(self.image(),
+        event.Pos = matchRect(self.image(),
             event.Img,
             event.Rect,
-            threshold
-        )
+            threshold=threshold)
+        return event.Pos
+        
+        # #FLANN单应性匹配
+        # event.Pos= flann_match(self.image(),
+        #     event.Img,
+        #     event.Rect,
+        #     threshold
+        # )
         return event.Pos
 
     def flush(self):
+        if self.isLatest:
+            return
         self.screenShot()
+    
+    def UseImg(self):
+        self.isLatest=False
 
     def isCmpare(self,img1,img2):
         return match(img1,img2)
 
-    def findFromNow(self,event, threshold = 0.7):
-        #耗时尽量少用
-        event.Pos = flann_match(self.screenShot(),
-            event.Img,
-            event.Rect,
-            threshold)
-        return event.Pos
-    
+
     
 
 class Event():

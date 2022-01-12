@@ -19,30 +19,33 @@ class Base(Device):
     EventGoumaiXuqiu=Event('./pic/base/goumai_xuqiu.png',RECTS.TopHalf)
     EventShangjiao=Event('./pic/base/shangjiao.png',RECTS.BottomHalf)
     EventJixiBtn=Event('./pic/base/jixu_btn.png',RECTS.TopHalf)
+    EventRenwushuxing=Event('./pic/base/renwushuxing.png',RECTS.TopHalf)
     EventBeginCancel=[
         Event('./pic/base/begin_guanbi1.png',RECTS.RightHalf),
         Event('./pic/base/begin_guanbi2.png',RECTS.RightHalf),
     ]
-    def waitRun(self):
-        while True:
-            if self.isHomePage():
-                img1=self.screenShot()[60:80,149:202]
-                time.sleep(0.5)
-                img2=self.screenShot()[60:80,149:202]
-                if self.isCmpare(img1,img2):
-                    break
-                else:
-                    print('跑图中...')
-            else:
-                break
+    # def waitRun(self):
+    #     while True:
+    #         if self.isHomePage():
+    #             self.flush()
+    #             img1=self.image()[60:80,149:202]
+    #             time.sleep(0.5)
+    #             self.flush()
+    #             img2=self.image()[60:80,149:202]
+    #             if self.isCmpare(img1,img2):
+    #                 break
+    #             else:
+    #                 print('跑图中...')
+    #         else:
+    #             break
 
-    def waitFight(self):
-        print('战斗中...')
-        if self.find(self.EventZidong):
-            self.click(*self.EventZidong.Position())
-            time.sleep(0.2)
-        while self.findFromNow(self.EventGuajiQuxiao):
-            time.sleep(2)
+    # def waitFight(self):
+    #     print('战斗中...')
+    #     if self.find(self.EventZidong):
+    #         self.click(*self.EventZidong.Position())
+    #         time.sleep(0.2)
+    #     while self.findFromNow(self.EventGuajiQuxiao):
+    #         time.sleep(2)
 
     def isHomePage(self): 
         # print('查找',self.EventZhiyin.file)
@@ -96,15 +99,22 @@ class Base(Device):
             print('上交物品')
             self.click(*self.EventShangjiao.Position())
         #TODO 跳过剧情
-        elif self.find(self.EventJixiBtn,0.9):
+        elif self.find(self.EventJixiBtn):
             print('跳过剧情')
             self.click(*self.EventJixiBtn.Position())
+        elif self.find(self.EventRenwushuxing):
+            print('关闭人物属性窗口')
+            self.click(1093,47)
             
         
     def Begin(self):
+        print('等待进入主界面...')
         while not self.isHomePage():
             for event in self.EventBeginCancel:
                 if self.find(event):
-                    self.click(*event.Position)
+                    self.click(*event.Position())
                     time.sleep(0.2)
                     self.flush()
+                    self.UseImg()
+        print('进入主界面')
+        
